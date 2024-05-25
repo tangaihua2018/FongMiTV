@@ -2,6 +2,7 @@ package com.fongmi.android.tv.bean;
 
 import android.text.TextUtils;
 
+import androidx.media3.common.util.Log;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -39,7 +40,8 @@ public class Config {
     private String parse;
 
     public static List<Config> arrayFrom(String str) {
-        Type listType = new TypeToken<List<Config>>() {}.getType();
+        Type listType = new TypeToken<List<Config>>() {
+        }.getType();
         List<Config> items = App.gson().fromJson(str, listType);
         return items == null ? Collections.emptyList() : items;
     }
@@ -121,7 +123,7 @@ public class Config {
     }
 
     public boolean isCache() {
-        return getTime() + (long)(3600*1000*12 * Setting.getConfigCache()) > System.currentTimeMillis();
+        return getTime() + (long) (3600 * 1000 * 12 * Setting.getConfigCache()) > System.currentTimeMillis();
     }
 
     public Config type(int type) {
@@ -183,12 +185,24 @@ public class Config {
 
     public static Config vod() {
         Config item = AppDatabase.get().getConfigDao().findOne(0);
-        return item == null ? create(0) : item;
+        if (item != null) Log.d("Config", "初始点播配置：" + item.url);
+        if (item == null){
+            item = create(0);
+            item.setName("唐家电视点播");
+            item.setUrl("http://v.118318.xyz/tv.json");
+        }
+        return item;
     }
 
     public static Config live() {
         Config item = AppDatabase.get().getConfigDao().findOne(1);
-        return item == null ? create(1) : item;
+        if (item != null) Log.d("Config", "初始直播配置：" + item.url);
+        if (item == null){
+            item = create(1);
+            item.setName("唐家电视点播");
+            item.setUrl("http://v.118318.xyz/iptv.m3u");
+        }
+        return item;
     }
 
     public static Config wall() {

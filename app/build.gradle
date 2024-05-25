@@ -6,12 +6,19 @@ android {
     compileSdk 34
     flavorDimensions = ["mode", "api", "abi"]
 
+    sourceSets {
+        main {
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
+
     defaultConfig {
         applicationId "com.fongmi.android.tv"
         minSdk 21
         targetSdk 28
         versionCode 233
-        versionName "2.3.3"
+//        versionName "2.3.3"
+        versionName "3.0.0"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
@@ -55,6 +62,7 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -101,6 +109,7 @@ dependencies {
     implementation project(':jianpian')
     implementation project(':forcetech')
     implementation project(':ijkplayer')
+    implementation 'com.squareup.okhttp:okhttp:2.5.0'
     implementation 'androidx.media3:media3-datasource-okhttp:' + media3Version
     implementation 'androidx.media3:media3-datasource-rtmp:' + media3Version
     implementation 'androidx.media3:media3-exoplayer:' + media3Version
@@ -138,6 +147,7 @@ dependencies {
     implementation 'com.tencent.tbs:tbssdk:44286'
     implementation('org.simpleframework:simple-xml:2.7.1') { exclude group: 'stax', module: 'stax-api' exclude group: 'xpp3', module: 'xpp3' }
     implementation(ext: 'aar', name: 'dlna-core', group: 'fongmi', version: 'release')
+    implementation files('libs/open-m3u8-0.2.7.jar')
     leanbackImplementation(ext: 'aar', name: 'dlna-dmr', group: 'fongmi', version: 'release')
     leanbackImplementation 'androidx.leanback:leanback:1.2.0-alpha04'
     leanbackImplementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'

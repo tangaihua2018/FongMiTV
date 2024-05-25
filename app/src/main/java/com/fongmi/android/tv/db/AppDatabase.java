@@ -44,6 +44,17 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase instance;
 
+    private static final RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
+        @Override
+        public void onCreate(@NonNull SupportSQLiteDatabase db) {
+            super.onCreate(db);
+
+            // 插入初始值
+            db.execSQL("INSERT INTO Config (id, name, url) VALUES (0, '唐家院子点播', 'https://v.118318.xyz/tv.json')");
+            db.execSQL("INSERT INTO Config (id, name, url) VALUES (1, 'iptv直播', 'https://v.118318.xyz/iptv.m3u')");
+        }
+    };
+
     public static synchronized AppDatabase get() {
         if (instance == null) instance = create(App.get());
         return instance;
@@ -80,13 +91,17 @@ public abstract class AppDatabase extends RoomDatabase {
             File wal = new File(Path.tv(), NAME + "-wal");
             File shm = new File(Path.tv(), NAME + "-shm");
             File pref = new File(Path.tv(), NAME + "-pref");
-            if (db.exists()) Path.copy(db, App.get().getDatabasePath(db.getName()).getAbsoluteFile());
-            if (wal.exists()) Path.copy(wal, App.get().getDatabasePath(wal.getName()).getAbsoluteFile());
-            if (shm.exists()) Path.copy(shm, App.get().getDatabasePath(shm.getName()).getAbsoluteFile());
+            if (db.exists())
+                Path.copy(db, App.get().getDatabasePath(db.getName()).getAbsoluteFile());
+            if (wal.exists())
+                Path.copy(wal, App.get().getDatabasePath(wal.getName()).getAbsoluteFile());
+            if (shm.exists())
+                Path.copy(shm, App.get().getDatabasePath(shm.getName()).getAbsoluteFile());
             if (pref.exists()) Prefers.restore(pref);
             App.post(callback::success);
         });
     }
+
 
     private static AppDatabase create(Context context) {
         return Room.databaseBuilder(context, AppDatabase.class, NAME)

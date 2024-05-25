@@ -86,7 +86,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     protected void initView() {
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
-        mBinding.wallUrl.setText(WallConfig.getDesc());
+//        mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.backupText.setText(AppDatabase.getDate());
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         mBinding.versionText.setText(BuildConfig.VERSION_NAME);
@@ -108,7 +108,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
     protected void initEvent() {
         mBinding.vod.setOnClickListener(this::onVod);
         mBinding.live.setOnClickListener(this::onLive);
-        mBinding.wall.setOnClickListener(this::onWall);
+//        mBinding.wall.setOnClickListener(this::onWall);
         mBinding.proxy.setOnClickListener(this::onProxy);
         mBinding.cache.setOnClickListener(this::onCache);
         mBinding.cache.setOnLongClickListener(this::onCacheLongClick);
@@ -119,13 +119,13 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         mBinding.vodHome.setOnClickListener(this::onVodHome);
         mBinding.live.setOnLongClickListener(this::onLiveEdit);
         mBinding.liveHome.setOnClickListener(this::onLiveHome);
-        mBinding.wall.setOnLongClickListener(this::onWallEdit);
+//        mBinding.wall.setOnLongClickListener(this::onWallEdit);
         mBinding.backup.setOnLongClickListener(this::onBackupAuto);
         mBinding.vodHistory.setOnClickListener(this::onVodHistory);
         mBinding.version.setOnLongClickListener(this::onVersionDev);
         mBinding.liveHistory.setOnClickListener(this::onLiveHistory);
-        mBinding.wallDefault.setOnClickListener(this::setWallDefault);
-        mBinding.wallRefresh.setOnClickListener(this::setWallRefresh);
+//        mBinding.wallDefault.setOnClickListener(this::setWallDefault);
+//        mBinding.wallRefresh.setOnClickListener(this::setWallRefresh);
         mBinding.doh.setOnClickListener(this::setDoh);
         mBinding.custom.setOnClickListener(this::onCustom);
         mBinding.configCache.setOnClickListener(this::setConfigCache);
@@ -156,7 +156,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
             case 2:
                 Notify.progress(getActivity());
                 WallConfig.load(config, getCallback());
-                mBinding.wallUrl.setText(config.getDesc());
+//                mBinding.wallUrl.setText(config.getDesc());
                 break;
         }
     }
@@ -185,7 +185,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
                 RefreshEvent.config();
                 mBinding.vodUrl.setText(VodConfig.getDesc());
                 mBinding.liveUrl.setText(LiveConfig.getDesc());
-                mBinding.wallUrl.setText(WallConfig.getDesc());
+//                mBinding.wallUrl.setText(WallConfig.getDesc());
                 break;
             case 1:
                 setCacheText();
@@ -196,7 +196,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
             case 2:
                 setCacheText();
                 Notify.dismiss();
-                mBinding.wallUrl.setText(WallConfig.getDesc());
+//                mBinding.wallUrl.setText(WallConfig.getDesc());
                 break;
         }
     }
@@ -378,7 +378,7 @@ public class SettingFragment extends BaseFragment implements ConfigCallback, Sit
         if (hidden) return;
         mBinding.vodUrl.setText(VodConfig.getDesc());
         mBinding.liveUrl.setText(LiveConfig.getDesc());
-        mBinding.wallUrl.setText(WallConfig.getDesc());
+//        mBinding.wallUrl.setText(WallConfig.getDesc());
         mBinding.dohText.setText(getDohList()[getDohIndex()]);
         setCacheText();
     }

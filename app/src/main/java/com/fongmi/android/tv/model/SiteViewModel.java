@@ -1,9 +1,13 @@
 package com.fongmi.android.tv.model;
 
+import static androidx.media3.common.MediaLibraryInfo.TAG;
+
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.collection.ArrayMap;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -21,14 +25,18 @@ import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.exception.ExtractException;
 import com.fongmi.android.tv.player.Source;
 import com.fongmi.android.tv.player.extractor.Thunder;
+import com.fongmi.android.tv.utils.DialogUtils;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Sniffer;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Trans;
 import com.github.catvod.utils.Util;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +59,7 @@ public class SiteViewModel extends ViewModel {
     public MutableLiveData<Result> player;
     public MutableLiveData<Result> search;
     public MutableLiveData<Danmu> danmaku;
+
     private ExecutorService executor;
 
     public SiteViewModel() {
@@ -165,6 +174,7 @@ public class SiteViewModel extends ViewModel {
                 result.setKey(key);
                 return result;
             } else if (site.getType() == 4) {
+                Log.i(TAG, "id2: " + id);
                 ArrayMap<String, String> params = new ArrayMap<>();
                 params.put("play", id);
                 params.put("flag", flag);
@@ -176,6 +186,7 @@ public class SiteViewModel extends ViewModel {
                 result.setHeader(site.getHeader());
                 return result;
             } else if (site.isEmpty() && "push_agent".equals(key)) {
+                Log.i(TAG, "id3: " + id);
                 Result result = new Result();
                 result.setParse(0);
                 result.setFlag(flag);
@@ -183,6 +194,7 @@ public class SiteViewModel extends ViewModel {
                 result.setUrl(Source.get().fetch(result));
                 return result;
             } else {
+                Log.i(TAG, "id4: " + id);
                 Url url = Url.create().add(id);
                 String type = Uri.parse(id).getQueryParameter("type");
                 if ("json".equals(type)) url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();

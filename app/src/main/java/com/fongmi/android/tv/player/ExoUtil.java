@@ -14,7 +14,6 @@ import androidx.media3.common.Tracks;
 import androidx.media3.database.DatabaseProvider;
 import androidx.media3.database.StandaloneDatabaseProvider;
 import androidx.media3.datasource.DataSource;
-import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.datasource.cache.Cache;
@@ -89,7 +88,8 @@ public class ExoUtil {
 
     public static boolean haveTrack(Tracks tracks, int type) {
         int count = 0;
-        for (Tracks.Group trackGroup : tracks.getGroups()) if (trackGroup.getType() == type) count += trackGroup.length;
+        for (Tracks.Group trackGroup : tracks.getGroups())
+            if (trackGroup.getType() == type) count += trackGroup.length;
         return count > 0;
     }
 
@@ -109,13 +109,15 @@ public class ExoUtil {
         if (TextUtils.isEmpty(path)) return "";
         if (path.endsWith(".vtt")) return MimeTypes.TEXT_VTT;
         if (path.endsWith(".ssa") || path.endsWith(".ass")) return MimeTypes.TEXT_SSA;
-        if (path.endsWith(".ttml") || path.endsWith(".xml") || path.endsWith(".dfxp")) return MimeTypes.APPLICATION_TTML;
+        if (path.endsWith(".ttml") || path.endsWith(".xml") || path.endsWith(".dfxp"))
+            return MimeTypes.APPLICATION_TTML;
         return MimeTypes.APPLICATION_SUBRIP;
     }
 
     private static String getMimeType(String format, int errorCode) {
         if (format != null) return format;
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED) return MimeTypes.APPLICATION_M3U8;
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED)
+            return MimeTypes.APPLICATION_M3U8;
         return null;
     }
 
@@ -135,7 +137,8 @@ public class ExoUtil {
         Uri uri = UrlUtil.uri(url);
         if (sub != null) subs.add(sub);
         String mimeType = getMimeType(format, errorCode);
-        if (uri.getUserInfo() != null) headers.put(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
+        if (uri.getUserInfo() != null)
+            headers.put(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
         return new DefaultMediaSourceFactory(getDataSourceFactory(headers), getExtractorsFactory()).createMediaSource(getMediaItem(uri, mimeType, subs, drm));
     }
 
@@ -175,17 +178,23 @@ public class ExoUtil {
     }
 
     private static synchronized ExtractorsFactory getExtractorsFactory() {
-        if (extractorsFactory == null) extractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ENABLE_HDMV_DTS_AUDIO_STREAMS).setTsExtractorTimestampSearchBytes(TsExtractor.DEFAULT_TIMESTAMP_SEARCH_BYTES * 3);
+        if (extractorsFactory == null)
+            extractorsFactory = new DefaultExtractorsFactory().setTsExtractorFlags(DefaultTsPayloadReaderFactory.FLAG_ENABLE_HDMV_DTS_AUDIO_STREAMS).setTsExtractorTimestampSearchBytes(TsExtractor.DEFAULT_TIMESTAMP_SEARCH_BYTES * 3);
         return extractorsFactory;
     }
 
     private static synchronized HttpDataSource.Factory getHttpDataSourceFactory() {
-        if (httpDataSourceFactory == null) httpDataSourceFactory = Setting.getHttp() == 0 ? new DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true) : new OkHttpDataSource.Factory((Call.Factory) OkHttp.client());
+        if (httpDataSourceFactory == null)
+            httpDataSourceFactory = Setting.getHttp() == 0 ? new DefaultHttpDataSource.Factory().setAllowCrossProtocolRedirects(true) : new OkHttpDataSource.Factory((Call.Factory) OkHttp.client());
         return httpDataSourceFactory;
     }
 
     private static synchronized DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        if (dataSourceFactory == null) dataSourceFactory = buildReadOnlyCacheDataSource(new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory()), getCache());
+        // tangah 2024.5.23 使用自定义datasource用来去广告
+        if (dataSourceFactory == null) {
+            // dataSourceFactory = buildReadOnlyCacheDataSource(new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory()), getCache());
+            dataSourceFactory = buildReadOnlyCacheDataSource(new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory()), getCache());
+        }
         httpDataSourceFactory.setDefaultRequestProperties(Players.checkUa(headers));
         return dataSourceFactory;
     }
@@ -200,7 +209,8 @@ public class ExoUtil {
     }
 
     private static synchronized Cache getCache() {
-        if (cache == null) cache = new SimpleCache(Path.exo(), new NoOpCacheEvictor(), getDatabase());
+        if (cache == null)
+            cache = new SimpleCache(Path.exo(), new NoOpCacheEvictor(), getDatabase());
         return cache;
     }
 

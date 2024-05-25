@@ -9,6 +9,7 @@ import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.media3.common.AudioAttributes;
@@ -367,6 +368,7 @@ public class Players implements Player.Listener, IMediaPlayer.Listener, Analytic
     public void play() {
         if (isPlaying() || isEnd()) return;
         session.setActive(true);
+        Log.i(TAG, "开始播放");
         if (isExo()) playExo();
         if (isIjk()) playIjk();
         if (haveDanmu()) danmuView.resume();
@@ -431,6 +433,7 @@ public class Players implements Player.Listener, IMediaPlayer.Listener, Analytic
 
     private void playExo() {
         if (exoPlayer == null) return;
+        Log.d(TAG,"exo播放");
         exoPlayer.play();
     }
 
@@ -487,7 +490,12 @@ public class Players implements Player.Listener, IMediaPlayer.Listener, Analytic
         setMediaSource(new HashMap<>(), url);
     }
 
+    private String processM3U8(String m3u8Url) {
+        return m3u8Url;
+    }
+
     private void setMediaSource(Result result, int timeout) {
+        Log.d(TAG, "测试2");
         Logger.t(TAG).d(error + "," + result.getRealUrl());
         if (isIjk() && ijkPlayer != null) ijkPlayer.setMediaSource(IjkUtil.getSource(result), position);
         if (isExo() && exoPlayer != null) exoPlayer.setMediaSource(ExoUtil.getSource(result, sub, error), position);

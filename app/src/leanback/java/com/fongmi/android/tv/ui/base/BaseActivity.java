@@ -1,6 +1,7 @@
 package com.fongmi.android.tv.ui.base;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -9,6 +10,7 @@ import android.view.View;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.leanback.widget.ArrayObjectAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,6 +40,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getBinding().getRoot());
+
         EventBus.getDefault().register(this);
         Util.hideSystemUI(this);
         setBackCallback();
@@ -93,14 +96,14 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     private void setWall() {
-        try {
-            if (!customWall()) return;
-            File file = FileUtil.getWall(Setting.getWall());
-            if (file.exists() && file.length() > 0) getWindow().setBackgroundDrawable(WallConfig.drawable(Drawable.createFromPath(file.getAbsolutePath())));
-            else getWindow().setBackgroundDrawableResource(ResUtil.getDrawable(file.getName()));
-        } catch (Exception e) {
-            getWindow().setBackgroundDrawableResource(R.drawable.wallpaper_1);
-        }
+//        try {
+//            if (!customWall()) return;
+//            File file = FileUtil.getWall(Setting.getWall());
+//            if (file.exists() && file.length() > 0) getWindow().setBackgroundDrawable(WallConfig.drawable(Drawable.createFromPath(file.getAbsolutePath())));
+//            else getWindow().setBackgroundDrawableResource(ResUtil.getDrawable(file.getName()));
+//        } catch (Exception e) {
+            getWindow().setBackgroundDrawableResource(R.drawable.app_bg);
+//        }
     }
 
     private Resources hackResources(Resources resources) {

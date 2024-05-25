@@ -18,6 +18,7 @@ import com.fongmi.android.tv.R;
 import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.api.config.WallConfig;
 import com.fongmi.android.tv.event.RefreshEvent;
+import com.fongmi.android.tv.utils.DialogUtils;
 import com.fongmi.android.tv.utils.FileUtil;
 import com.fongmi.android.tv.utils.ResUtil;
 
@@ -106,14 +107,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     private void setWall() {
-        try {
-            if (!customWall()) return;
-            File file = FileUtil.getWall(Setting.getWall());
-            if (file.exists() && file.length() > 0) getWindow().setBackgroundDrawable(WallConfig.drawable(Drawable.createFromPath(file.getAbsolutePath())));
-            else getWindow().setBackgroundDrawableResource(ResUtil.getDrawable(file.getName()));
-        } catch (Exception e) {
-            getWindow().setBackgroundDrawableResource(R.drawable.wallpaper_1);
-        }
+        // 注释掉自定义背景图
+//        try {
+//            if (!customWall()) return;
+//            File file = FileUtil.getWall(Setting.getWall());
+//            if (file.exists() && file.length() > 0) getWindow().setBackgroundDrawable(WallConfig.drawable(Drawable.createFromPath(file.getAbsolutePath())));
+//            else getWindow().setBackgroundDrawableResource(ResUtil.getDrawable(file.getName()));
+//        } catch (Exception e) {
+        getWindow().setBackgroundDrawableResource(R.drawable.wallpaper_4);
+//        }
     }
 
     private void setTransparent(Activity activity) {
