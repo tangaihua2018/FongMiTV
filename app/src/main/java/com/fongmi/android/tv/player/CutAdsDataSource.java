@@ -1,21 +1,5 @@
 package com.fongmi.android.tv.player;
 
-/*
- * Copyright (C) 2016 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
@@ -54,10 +38,12 @@ import java.util.Map;
  */
 public final class CutAdsDataSource implements DataSource {
     private InputStream inputStream = null;
+
     public static final class Factory implements DataSource.Factory {
 
         private final Context context;
         private final DataSource.Factory baseDataSourceFactory;
+        private final String fromSource;
         @Nullable
         private TransferListener transferListener;
 
@@ -66,13 +52,11 @@ public final class CutAdsDataSource implements DataSource {
          *
          * @param context A context.
          */
-        public Factory(Context context) {
-            this(context, new DefaultHttpDataSource.Factory());
-        }
 
-        public Factory(Context context, DataSource.Factory baseDataSourceFactory) {
+        public Factory(Context context, DataSource.Factory baseDataSourceFactory, String fromSource) {
             this.context = context.getApplicationContext();
             this.baseDataSourceFactory = baseDataSourceFactory;
+            this.fromSource = fromSource;
         }
 
         @UnstableApi
@@ -83,8 +67,12 @@ public final class CutAdsDataSource implements DataSource {
             if (transferListener != null) {
                 dataSource.addTransferListener(transferListener);
             }
+            if (fromSource != null)
+                dataSource.addFromSource(fromSource);
             return dataSource;
         }
+
+
     }
 
     private static final String TAG = "CutAdsDataSource";
@@ -100,6 +88,8 @@ public final class CutAdsDataSource implements DataSource {
     private final Context context;
     private final List<TransferListener> transferListeners;
     private final DataSource baseDataSource;
+    @Nullable
+    private String fromSource;
 
     // Lazily initialized.
     @Nullable
@@ -187,6 +177,12 @@ public final class CutAdsDataSource implements DataSource {
     }
 
     @UnstableApi
+    public void addFromSource(String fromSource) {
+        Assertions.checkNotNull(fromSource);
+        this.fromSource = fromSource;
+    }
+
+    @UnstableApi
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         Assertions.checkState(dataSource == null);
@@ -215,14 +211,16 @@ public final class CutAdsDataSource implements DataSource {
             dataSource = baseDataSource;
         }
         long length = dataSource.open(dataSpec);
-        // 处理量子和非凡的插播广告
         if (isLzOrFf(dataSpec.uri.toString())) {
             length = modifyM3u8();
         }
+
+        // 处理量子和非凡的插播广告
         return length;
     }
 
     private long modifyM3u8() throws IOException {
+
         // 读取基础数据源内容到字节数组
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         byte[] buffer = new byte[1024];
@@ -248,9 +246,14 @@ public final class CutAdsDataSource implements DataSource {
      * @return
      */
     private boolean isLzOrFf(String url) {
-        return url != null && url.toLowerCase().endsWith(".m3u8");
+        return url != null && url.toLowerCase().endsWith(".m3u8") && haveAds();
     }
 
+    private boolean haveAds() {
+        return fromSource != null && (
+                fromSource.equals("lzm3u8") || fromSource.equals("ffm3u8") || fromSource.equals("bfzym3u8")
+        );
+    }
     @UnstableApi
     @Override
     public int read(byte[] buffer, int offset, int length) throws IOException {

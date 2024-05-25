@@ -14,6 +14,7 @@ import androidx.media3.common.Tracks;
 import androidx.media3.database.DatabaseProvider;
 import androidx.media3.database.StandaloneDatabaseProvider;
 import androidx.media3.datasource.DataSource;
+import androidx.media3.datasource.DefaultDataSource;
 import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.HttpDataSource;
 import androidx.media3.datasource.cache.Cache;
@@ -63,6 +64,7 @@ public class ExoUtil {
     private static ExtractorsFactory extractorsFactory;
     private static DatabaseProvider database;
     private static Cache cache;
+    private static String flag;
 
     public static LoadControl buildLoadControl() {
         return new DefaultLoadControl();
@@ -122,6 +124,7 @@ public class ExoUtil {
     }
 
     public static MediaSource getSource(Result result, Sub sub, int errorCode) {
+        flag = result.getFlag();
         return getSource(result.getHeaders(), result.getRealUrl(), result.getFormat(), result.getSubs(), sub, null, errorCode);
     }
 
@@ -190,13 +193,22 @@ public class ExoUtil {
     }
 
     private static synchronized DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
-        // tangah 2024.5.23 使用自定义datasource用来去广告
         if (dataSourceFactory == null) {
-            // dataSourceFactory = buildReadOnlyCacheDataSource(new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory()), getCache());
-            dataSourceFactory = buildReadOnlyCacheDataSource(new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory()), getCache());
+            DataSource.Factory factory = dataSourceFactory = haveAds() ?
+                    new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory(),flag):
+                    new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory());
+            buildReadOnlyCacheDataSource(factory, getCache());
         }
         httpDataSourceFactory.setDefaultRequestProperties(Players.checkUa(headers));
         return dataSourceFactory;
+    }
+
+    private static boolean haveAds() {
+        return flag != null && (
+                flag.equals("lzm3u8") ||
+                flag.equals("ffm3u8") ||
+                flag.equals("bfzym3u8")
+        );
     }
 
     private static CacheDataSource.Factory buildReadOnlyCacheDataSource(DataSource.Factory upstreamFactory, Cache cache) {
