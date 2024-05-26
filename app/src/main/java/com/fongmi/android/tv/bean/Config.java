@@ -2,7 +2,6 @@ package com.fongmi.android.tv.bean;
 
 import android.text.TextUtils;
 
-import androidx.media3.common.util.Log;
 import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
@@ -10,6 +9,7 @@ import androidx.room.PrimaryKey;
 import com.fongmi.android.tv.App;
 import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.db.AppDatabase;
+import com.fongmi.android.tv.utils.AssetUtils;
 import com.github.catvod.utils.Prefers;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
@@ -17,6 +17,7 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
+
 
 @Entity(indices = @Index(value = {"url", "type"}, unique = true))
 public class Config {
@@ -185,24 +186,29 @@ public class Config {
 
     public static Config vod() {
         Config item = AppDatabase.get().getConfigDao().findOne(0);
-        if (item != null) Log.d("Config", "初始点播配置：" + item.url);
-        if (item == null){
+        if (item == null) {
             item = create(0);
-            item.setName("唐家电视点播");
-            item.setUrl("http://v.118318.xyz/tv.json");
+            item.setName("唐家影视点播");
+            item.setUrl(localConfigPath("tv.json"));
+            AppDatabase.get().getConfigDao().insertOrUpdate(item);
         }
         return item;
     }
 
     public static Config live() {
         Config item = AppDatabase.get().getConfigDao().findOne(1);
-        if (item != null) Log.d("Config", "初始直播配置：" + item.url);
-        if (item == null){
+        if (item == null) {
             item = create(1);
-            item.setName("唐家电视点播");
-            item.setUrl("http://v.118318.xyz/iptv.m3u");
+            item.setName("唐家电视直播");
+            item.setUrl(localConfigPath("iptv.m3u"));
+            AppDatabase.get().getConfigDao().insertOrUpdate(item);
         }
         return item;
+    }
+
+    // 本地配置文件路径获取
+    private static String localConfigPath(String oriFileName) {
+        return "file://" + AssetUtils.copyAssetToInternalStorage(App.get(), oriFileName, oriFileName);
     }
 
     public static Config wall() {

@@ -44,17 +44,6 @@ public abstract class AppDatabase extends RoomDatabase {
 
     private static volatile AppDatabase instance;
 
-    private static final RoomDatabase.Callback sRoomDatabaseCallback = new RoomDatabase.Callback() {
-        @Override
-        public void onCreate(@NonNull SupportSQLiteDatabase db) {
-            super.onCreate(db);
-
-            // 插入初始值
-            db.execSQL("INSERT INTO Config (id, name, url) VALUES (0, '唐家院子点播', 'https://v.118318.xyz/tv.json')");
-            db.execSQL("INSERT INTO Config (id, name, url) VALUES (1, 'iptv直播', 'https://v.118318.xyz/iptv.m3u')");
-        }
-    };
-
     public static synchronized AppDatabase get() {
         if (instance == null) instance = create(App.get());
         return instance;

@@ -1,3 +1,15 @@
+buildscript {
+    ext.kotlin_version = "1.8.0" // 更新为1.8.0
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:4.2.2"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 plugins {
     id 'com.android.application'
 }
@@ -148,6 +160,7 @@ dependencies {
     implementation('org.simpleframework:simple-xml:2.7.1') { exclude group: 'stax', module: 'stax-api' exclude group: 'xpp3', module: 'xpp3' }
     implementation(ext: 'aar', name: 'dlna-core', group: 'fongmi', version: 'release')
     implementation files('libs/open-m3u8-0.2.7.jar')
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.0'
     leanbackImplementation(ext: 'aar', name: 'dlna-dmr', group: 'fongmi', version: 'release')
     leanbackImplementation 'androidx.leanback:leanback:1.2.0-alpha04'
     leanbackImplementation 'com.github.hedzr:android-file-chooser:v1.2.0-final'
