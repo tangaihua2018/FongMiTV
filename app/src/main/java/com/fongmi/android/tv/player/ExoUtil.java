@@ -43,12 +43,15 @@ import com.fongmi.android.tv.bean.Channel;
 import com.fongmi.android.tv.bean.Drm;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.bean.Sub;
+import com.fongmi.android.tv.server.Server;
+import com.fongmi.android.tv.utils.CutM3u8Ads;
 import com.fongmi.android.tv.utils.UrlUtil;
 import com.github.catvod.net.OkHttp;
 import com.github.catvod.utils.Path;
 import com.github.catvod.utils.Util;
 import com.google.common.net.HttpHeaders;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +67,6 @@ public class ExoUtil {
     private static ExtractorsFactory extractorsFactory;
     private static DatabaseProvider database;
     private static Cache cache;
-    private static String flag;
 
     public static LoadControl buildLoadControl() {
         return new DefaultLoadControl();
@@ -124,7 +126,6 @@ public class ExoUtil {
     }
 
     public static MediaSource getSource(Result result, Sub sub, int errorCode) {
-        flag = result.getFlag();
         return getSource(result.getHeaders(), result.getRealUrl(), result.getFormat(), result.getSubs(), sub, null, errorCode);
     }
 
@@ -138,6 +139,9 @@ public class ExoUtil {
 
     private static MediaSource getSource(Map<String, String> headers, String url, String format, List<Sub> subs, Sub sub, Drm drm, int errorCode) {
         Uri uri = UrlUtil.uri(url);
+        // 加代理去广告
+        if (CutM3u8Ads.haveAds(headers.get("flag"), url))
+            uri = Uri.parse(Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(uri.toString())));
         if (sub != null) subs.add(sub);
         String mimeType = getMimeType(format, errorCode);
         if (uri.getUserInfo() != null)
@@ -147,7 +151,7 @@ public class ExoUtil {
 
     private static MediaItem getMediaItem(Uri uri, String mimeType, List<Sub> subs, Drm drm) {
         MediaItem.Builder builder = new MediaItem.Builder().setUri(uri);
-        if (subs.size() > 0) builder.setSubtitleConfigurations(getSubtitles(subs));
+        if (!subs.isEmpty()) builder.setSubtitleConfigurations(getSubtitles(subs));
         if (drm != null) builder.setDrmConfiguration(drm.get());
         if (mimeType != null) builder.setMimeType(mimeType);
         return builder.build();
@@ -194,21 +198,13 @@ public class ExoUtil {
 
     private static synchronized DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
         if (dataSourceFactory == null) {
-            DataSource.Factory factory = dataSourceFactory = haveAds() ?
-                    new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory(),flag):
+            DataSource.Factory factory = dataSourceFactory =
+//                    new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory(),flag);
                     new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory());
             buildReadOnlyCacheDataSource(factory, getCache());
         }
         httpDataSourceFactory.setDefaultRequestProperties(Players.checkUa(headers));
         return dataSourceFactory;
-    }
-
-    private static boolean haveAds() {
-        return flag != null && (
-                flag.equals("lzm3u8") ||
-                flag.equals("ffm3u8") ||
-                flag.equals("bfzym3u8")
-        );
     }
 
     private static CacheDataSource.Factory buildReadOnlyCacheDataSource(DataSource.Factory upstreamFactory, Cache cache) {

@@ -20,6 +20,7 @@ import androidx.media3.datasource.RawResourceDataSource;
 import androidx.media3.datasource.TransferListener;
 import androidx.media3.datasource.UdpDataSource;
 
+import com.fongmi.android.tv.utils.CutM3u8Ads;
 import com.iheartradio.m3u8.ParseException;
 import com.iheartradio.m3u8.PlaylistException;
 
@@ -27,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -211,11 +213,11 @@ public final class CutAdsDataSource implements DataSource {
             dataSource = baseDataSource;
         }
         long length = dataSource.open(dataSpec);
+
+        // 处理量子和非凡的插播广告
         if (isLzOrFf(dataSpec.uri.toString())) {
             length = modifyM3u8();
         }
-
-        // 处理量子和非凡的插播广告
         return length;
     }
 
@@ -230,10 +232,12 @@ public final class CutAdsDataSource implements DataSource {
         }
         byte[] data = byteArrayOutputStream.toByteArray();
         try {
-            data = CutM3u8Ads.cutAds(data);
+            data = CutM3u8Ads.cutAds(data, null);
         } catch (PlaylistException | ParseException exception) {
             Log.e(TAG, exception.toString());
             throw new RuntimeException();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
         inputStream = new ByteArrayInputStream(data);
         return data.length;
@@ -250,9 +254,10 @@ public final class CutAdsDataSource implements DataSource {
     }
 
     private boolean haveAds() {
-        return fromSource != null && (
-                fromSource.equals("lzm3u8") || fromSource.equals("ffm3u8") || fromSource.equals("bfzym3u8")
-        );
+        return fromSource == null ||
+                fromSource.equals("lzm3u8") ||
+                fromSource.equals("ffm3u8") ||
+                fromSource.equals("bfzym3u8");
     }
     @UnstableApi
     @Override

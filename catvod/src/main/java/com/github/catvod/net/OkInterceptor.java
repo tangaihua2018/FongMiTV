@@ -4,6 +4,8 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
+import androidx.media3.common.util.UnstableApi;
 
 import com.github.catvod.Proxy;
 import com.github.catvod.utils.Util;
@@ -23,7 +25,9 @@ import okio.BufferedSource;
 import okio.Okio;
 
 public class OkInterceptor implements Interceptor {
+    private final static String TAG = "OkInterceptor";
 
+    @OptIn(markerClass = UnstableApi.class)
     @NonNull
     @Override
     public Response intercept(@NonNull Chain chain) throws IOException {
@@ -35,6 +39,7 @@ public class OkInterceptor implements Interceptor {
         return response;
     }
 
+    @OptIn(markerClass = UnstableApi.class)
     private Request getRequest(Request request) {
         URI uri = request.url().uri();
         String url = request.url().toString();
@@ -42,7 +47,8 @@ public class OkInterceptor implements Interceptor {
         boolean local = url.contains(":" + Proxy.getPort() + "/");
         if (url.contains("+") && local) builder.url(url.replace("+", "%2B"));
         if (url.contains("gitcode.net")) builder.header(HttpHeaders.USER_AGENT, Util.CHROME);
-        if (uri.getUserInfo() != null) builder.header(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
+        if (uri.getUserInfo() != null)
+            builder.header(HttpHeaders.AUTHORIZATION, Util.basic(uri.getUserInfo()));
         return builder.build();
     }
 

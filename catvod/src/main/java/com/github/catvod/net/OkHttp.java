@@ -131,7 +131,16 @@ public class OkHttp {
     }
 
     private static OkHttpClient.Builder getBuilder() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder().cookieJar(new OkCookieJar()).addNetworkInterceptor(new OkInterceptor()).connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS).readTimeout(TIMEOUT, TimeUnit.MILLISECONDS).writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS).dns(dns()).hostnameVerifier((hostname, session) -> true).followRedirects(true).sslSocketFactory(new SSLCompat(), SSLCompat.TM);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .cookieJar(new OkCookieJar())
+                .addNetworkInterceptor(new OkInterceptor())
+                .connectTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .readTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .writeTimeout(TIMEOUT, TimeUnit.MILLISECONDS)
+                .dns(dns())
+                .hostnameVerifier((hostname, session) -> true)
+                .followRedirects(true)
+                .sslSocketFactory(new SSLCompat(), SSLCompat.TM);
         builder.proxySelector(get().proxy ? selector() : defaultSelector);
         return builder;
     }

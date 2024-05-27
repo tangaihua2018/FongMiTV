@@ -1,13 +1,9 @@
 package com.fongmi.android.tv.model;
 
-import static androidx.media3.common.MediaLibraryInfo.TAG;
-
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.collection.ArrayMap;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -25,19 +21,20 @@ import com.fongmi.android.tv.bean.Vod;
 import com.fongmi.android.tv.exception.ExtractException;
 import com.fongmi.android.tv.player.Source;
 import com.fongmi.android.tv.player.extractor.Thunder;
-import com.fongmi.android.tv.utils.DialogUtils;
+import com.fongmi.android.tv.server.Server;
+import com.fongmi.android.tv.utils.CutM3u8Ads;
 import com.fongmi.android.tv.utils.ResUtil;
 import com.fongmi.android.tv.utils.Sniffer;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
 import com.github.catvod.net.OkHttp;
-import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Trans;
 import com.github.catvod.utils.Util;
+import com.google.gson.JsonObject;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -112,8 +109,10 @@ public class SiteViewModel extends ViewModel {
                 return Result.fromJson(categoryContent);
             } else {
                 ArrayMap<String, String> params = new ArrayMap<>();
-                if (site.getType() == 1 && !extend.isEmpty()) params.put("f", App.gson().toJson(extend));
-                else if (site.getType() == 4) params.put("ext", Util.base64(App.gson().toJson(extend)));
+                if (site.getType() == 1 && !extend.isEmpty())
+                    params.put("f", App.gson().toJson(extend));
+                else if (site.getType() == 4)
+                    params.put("ext", Util.base64(App.gson().toJson(extend)));
                 params.put("ac", site.getType() == 0 ? "videolist" : "detail");
                 params.put("t", tid);
                 params.put("pg", page);
@@ -134,7 +133,8 @@ public class SiteViewModel extends ViewModel {
                 VodConfig.get().setRecent(site);
                 Result result = Result.fromJson(detailContent);
                 if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags();
-                if (!result.getList().isEmpty()) checkThunder(result.getList().get(0).getVodFlags());
+                if (!result.getList().isEmpty())
+                    checkThunder(result.getList().get(0).getVodFlags());
                 return result;
             } else if (site.isEmpty() && "push_agent".equals(key)) {
                 Vod vod = new Vod();
@@ -152,7 +152,8 @@ public class SiteViewModel extends ViewModel {
                 SpiderDebug.log(detailContent);
                 Result result = Result.fromType(site.getType(), detailContent);
                 if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags();
-                if (!result.getList().isEmpty()) checkThunder(result.getList().get(0).getVodFlags());
+                if (!result.getList().isEmpty())
+                    checkThunder(result.getList().get(0).getVodFlags());
                 return result;
             }
         });
@@ -174,7 +175,6 @@ public class SiteViewModel extends ViewModel {
                 result.setKey(key);
                 return result;
             } else if (site.getType() == 4) {
-                Log.i(TAG, "id2: " + id);
                 ArrayMap<String, String> params = new ArrayMap<>();
                 params.put("play", id);
                 params.put("flag", flag);
@@ -186,7 +186,6 @@ public class SiteViewModel extends ViewModel {
                 result.setHeader(site.getHeader());
                 return result;
             } else if (site.isEmpty() && "push_agent".equals(key)) {
-                Log.i(TAG, "id3: " + id);
                 Result result = new Result();
                 result.setParse(0);
                 result.setFlag(flag);
@@ -194,20 +193,33 @@ public class SiteViewModel extends ViewModel {
                 result.setUrl(Source.get().fetch(result));
                 return result;
             } else {
-                Log.i(TAG, "id4: " + id);
+//                String u = id;
+//                if (CutM3u8Ads.haveAds(flag, id)) {
+//                    u = Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(id));
+//                }
                 Url url = Url.create().add(id);
+
                 String type = Uri.parse(id).getQueryParameter("type");
-                if ("json".equals(type)) url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();
+                if ("json".equals(type))
+                    url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();
                 Result result = new Result();
+
                 result.setUrl(url);
                 result.setFlag(flag);
-                result.setHeader(site.getHeader());
+                JsonObject heades = site.getHeader() == null ? new JsonObject(): (JsonObject) site.getHeader();
+                heades.addProperty("flag", flag);
+                result.setHeader(heades);
                 result.setPlayUrl(site.getPlayUrl());
                 result.setParse(Sniffer.isVideoFormat(url.v()) && result.getPlayUrl().isEmpty() ? 0 : 1);
                 SpiderDebug.log(result.toString());
                 return result;
             }
         });
+    }
+
+    private String addProxy(String url, String flag) throws UnsupportedEncodingException {
+        return CutM3u8Ads.haveAds(flag, url) ?
+                "http://localhost:" + Server.get().getPort() + "/index.m3u8?url=" + URLEncoder.encode(url, "UTF-8") : url;
     }
 
     public void searchContent(Site site, String keyword, boolean quick) throws Throwable {
@@ -269,7 +281,8 @@ public class SiteViewModel extends ViewModel {
     }
 
     private Result fetchPic(Site site, Result result) throws Exception {
-        if (site.getType() > 2 || result.getList().isEmpty() || result.getList().get(0).getVodPic().length() > 0) return result;
+        if (site.getType() > 2 || result.getList().isEmpty() || result.getList().get(0).getVodPic().length() > 0)
+            return result;
         ArrayList<String> ids = new ArrayList<>();
         for (Vod item : result.getList()) ids.add(item.getVodId());
         ArrayMap<String, String> params = new ArrayMap<>();
@@ -283,7 +296,8 @@ public class SiteViewModel extends ViewModel {
     private void checkThunder(List<Flag> flags) throws Exception {
         for (Flag flag : flags) {
             ExecutorService executor = Executors.newFixedThreadPool(Constant.THREAD_POOL * 2);
-            for (Future<List<Episode>> future : executor.invokeAll(getThunder(flag), 30, TimeUnit.SECONDS)) flag.getEpisodes().addAll(future.get());
+            for (Future<List<Episode>> future : executor.invokeAll(getThunder(flag), 30, TimeUnit.SECONDS))
+                flag.getEpisodes().addAll(future.get());
             executor.shutdownNow();
         }
     }
@@ -317,7 +331,8 @@ public class SiteViewModel extends ViewModel {
                 result.postValue(executor.submit(callable).get(Constant.TIMEOUT_VOD, TimeUnit.MILLISECONDS));
             } catch (Throwable e) {
                 if (e instanceof InterruptedException || Thread.interrupted()) return;
-                if (e.getCause() instanceof ExtractException) result.postValue(Result.error(e.getCause().getMessage()));
+                if (e.getCause() instanceof ExtractException)
+                    result.postValue(Result.error(e.getCause().getMessage()));
                 else result.postValue(Result.empty());
                 e.printStackTrace();
             }

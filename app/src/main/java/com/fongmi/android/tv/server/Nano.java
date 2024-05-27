@@ -60,7 +60,8 @@ public class Nano extends NanoHTTPD {
 
     public static Response redirect(String url, Map<String, String> headers) {
         Response response = newFixedLengthResponse(Response.Status.REDIRECT, MIME_HTML, "");
-        for (Map.Entry<String, String> entry : headers.entrySet()) response.addHeader(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, String> entry : headers.entrySet())
+            response.addHeader(entry.getKey(), entry.getValue());
         response.addHeader(HttpHeaders.LOCATION, url);
         return response;
     }
@@ -73,11 +74,14 @@ public class Nano extends NanoHTTPD {
         if (url.contains("?")) url = url.substring(0, url.indexOf('?'));
         if (url.startsWith("/go")) return go();
         if (url.startsWith("/m3u8")) return m3u8(session);
+        if (url.startsWith("/index.m3u8")) return _m3u8(session);
         if (url.startsWith("/proxy")) return proxy(session);
         if (url.startsWith("/tvbus")) return success(LiveConfig.getResp());
         if (url.startsWith("/device")) return success(Device.get().toString());
-        if (url.startsWith("/license")) return success(new String(Base64.decode(url.substring(9), Base64.DEFAULT)));
-        for (Process process : process) if (process.isRequest(session, url)) return process.doResponse(session, url, files);
+        if (url.startsWith("/license"))
+            return success(new String(Base64.decode(url.substring(9), Base64.DEFAULT)));
+        for (Process process : process)
+            if (process.isRequest(session, url)) return process.doResponse(session, url, files);
         return getAssets(url.substring(1));
     }
 
@@ -86,7 +90,8 @@ public class Nano extends NanoHTTPD {
         if (ct != null && ct.toLowerCase().contains("multipart/form-data") && !ct.toLowerCase().contains("charset=")) {
             Matcher matcher = Pattern.compile("[ |\t]*(boundary[ |\t]*=[ |\t]*['|\"]?[^\"^'^;^,]*['|\"]?)", Pattern.CASE_INSENSITIVE).matcher(ct);
             String boundary = matcher.find() ? matcher.group(1) : null;
-            if (boundary != null) session.getHeaders().put("content-type", "multipart/form-data; charset=utf-8; " + boundary);
+            if (boundary != null)
+                session.getHeaders().put("content-type", "multipart/form-data; charset=utf-8; " + boundary);
         }
         try {
             session.parseBody(files);
@@ -104,6 +109,22 @@ public class Nano extends NanoHTTPD {
         String result = M3U8.get(url, session.getHeaders());
         if (result.isEmpty()) return redirect(url, session.getHeaders());
         return newChunkedResponse(Response.Status.OK, MIME_PLAINTEXT, new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private Response _m3u8(IHTTPSession session) {
+        String url = session.getParms().get("url");
+        String result = M3U8._get(url, session.getHeaders());
+        if (result.isEmpty()) return redirect(url, session.getHeaders());
+//        Response response = newChunkedResponse(Response.Status.OK, "application/vnd.apple.mpegurl", new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)));
+        Response response = newFixedLengthResponse(Response.Status.OK, "application/vnd.apple.mpegurl", result);
+        addCORSHeaders(response);
+        return response;
+    }
+
+    private void addCORSHeaders(Response response) {
+        response.addHeader("Access-Control-Allow-Origin", "*");
+        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//        response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     }
 
     private Response proxy(IHTTPSession session) {
