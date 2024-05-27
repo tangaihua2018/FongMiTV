@@ -2,6 +2,7 @@ package com.fongmi.android.tv.player;
 
 import android.net.Uri;
 
+import com.fongmi.android.tv.Constant;
 import com.fongmi.android.tv.bean.Channel;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.server.Server;
@@ -28,7 +29,7 @@ public class IjkUtil {
 //        boolean m3u8Ad = Sniffer.getRegex(uri).size() > 0;
         // 加代理去广告
         if (CutM3u8Ads.haveAds(headers.get("flag"), url))
-            uri = Uri.parse(Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(uri.toString())));
+            uri = Uri.parse(Server.get().getAddress().concat(Constant.CUT_ADS_PATH + "?url=").concat(URLEncoder.encode(uri.toString())));
         return new MediaSource(Players.checkUa(headers), uri);
     }
 }

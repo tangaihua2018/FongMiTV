@@ -2,6 +2,7 @@ package com.fongmi.android.tv.server;
 
 import android.util.Base64;
 
+import com.fongmi.android.tv.Constant;
 import com.fongmi.android.tv.api.config.LiveConfig;
 import com.fongmi.android.tv.api.config.VodConfig;
 import com.fongmi.android.tv.bean.Device;
@@ -74,7 +75,7 @@ public class Nano extends NanoHTTPD {
         if (url.contains("?")) url = url.substring(0, url.indexOf('?'));
         if (url.startsWith("/go")) return go();
         if (url.startsWith("/m3u8")) return m3u8(session);
-        if (url.startsWith("/index.m3u8")) return _m3u8(session);
+        if (url.startsWith(Constant.CUT_ADS_PATH)) return _m3u8(session);
         if (url.startsWith("/proxy")) return proxy(session);
         if (url.startsWith("/tvbus")) return success(LiveConfig.getResp());
         if (url.startsWith("/device")) return success(Device.get().toString());

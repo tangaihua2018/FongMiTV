@@ -25,4 +25,6 @@ public class Constant {
     public static final int TIMEOUT_SYNC = 2 * 1000;
     //搜尋線程數量
     public static final int THREAD_POOL = 5;
+    // 去广告路径
+    public static final String CUT_ADS_PATH = "/cut_ads";
 }

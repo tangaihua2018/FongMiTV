@@ -38,6 +38,7 @@ import androidx.media3.extractor.ts.TsExtractor;
 import androidx.media3.ui.CaptionStyleCompat;
 
 import com.fongmi.android.tv.App;
+import com.fongmi.android.tv.Constant;
 import com.fongmi.android.tv.Setting;
 import com.fongmi.android.tv.bean.Channel;
 import com.fongmi.android.tv.bean.Drm;
@@ -141,7 +142,7 @@ public class ExoUtil {
         Uri uri = UrlUtil.uri(url);
         // 加代理去广告
         if (CutM3u8Ads.haveAds(headers.get("flag"), url))
-            uri = Uri.parse(Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(uri.toString())));
+            uri = Uri.parse(Server.get().getAddress().concat(Constant.CUT_ADS_PATH + "?url=").concat(URLEncoder.encode(uri.toString())));
         if (sub != null) subs.add(sub);
         String mimeType = getMimeType(format, errorCode);
         if (uri.getUserInfo() != null)
@@ -198,9 +199,7 @@ public class ExoUtil {
 
     private static synchronized DataSource.Factory getDataSourceFactory(Map<String, String> headers) {
         if (dataSourceFactory == null) {
-            DataSource.Factory factory = dataSourceFactory =
-//                    new CutAdsDataSource.Factory(App.get(), getHttpDataSourceFactory(),flag);
-                    new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory());
+            DataSource.Factory factory = dataSourceFactory = new DefaultDataSource.Factory(App.get(), getHttpDataSourceFactory());
             buildReadOnlyCacheDataSource(factory, getCache());
         }
         httpDataSourceFactory.setDefaultRequestProperties(Players.checkUa(headers));
