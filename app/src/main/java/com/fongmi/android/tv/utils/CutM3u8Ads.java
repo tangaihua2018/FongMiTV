@@ -8,6 +8,7 @@ import android.os.Looper;
 
 import com.fongmi.android.tv.App;
 import com.github.catvod.net.OkHttp;
+import com.google.common.net.HttpHeaders;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.ParseException;
@@ -26,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,8 +47,9 @@ public class CutM3u8Ads {
             URI resolvedUri = new URI(baseUrl).resolve(data.getUri());
             data.setUri(resolvedUri.toString());
             okhttp3.Response response = OkHttp.newCall(resolvedUri.toString()).execute();
-            String res = response.body().string();
-            return cutAds(res.getBytes(StandardCharsets.UTF_8), resolvedUri.toString());
+            if (response.header(HttpHeaders.ACCEPT_RANGES) != null) return new byte[0];
+            byte[] res = response.body().bytes();
+            return cutAds(res, resolvedUri.toString());
         }
 
         double duration = cut_ads_list(mediaPlaylist, baseUrl);

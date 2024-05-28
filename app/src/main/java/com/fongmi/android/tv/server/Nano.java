@@ -75,7 +75,7 @@ public class Nano extends NanoHTTPD {
         if (url.contains("?")) url = url.substring(0, url.indexOf('?'));
         if (url.startsWith("/go")) return go();
         if (url.startsWith("/m3u8")) return m3u8(session);
-        if (url.startsWith(Constant.CUT_ADS_PATH)) return _m3u8(session);
+        if (url.startsWith(Constant.CUT_ADS_PATH)) return cutAds(session);
         if (url.startsWith("/proxy")) return proxy(session);
         if (url.startsWith("/tvbus")) return success(LiveConfig.getResp());
         if (url.startsWith("/device")) return success(Device.get().toString());
@@ -112,7 +112,7 @@ public class Nano extends NanoHTTPD {
         return newChunkedResponse(Response.Status.OK, MIME_PLAINTEXT, new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)));
     }
 
-    private Response _m3u8(IHTTPSession session) {
+    private Response cutAds(IHTTPSession session) {
         String url = session.getParms().get("url");
         String result = M3U8._get(url, session.getHeaders());
         if (result.isEmpty()) return redirect(url, session.getHeaders());
