@@ -193,12 +193,7 @@ public class SiteViewModel extends ViewModel {
                 result.setUrl(Source.get().fetch(result));
                 return result;
             } else {
-//                String u = id;
-//                if (CutM3u8Ads.haveAds(flag, id)) {
-//                    u = Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(id));
-//                }
                 Url url = Url.create().add(id);
-
                 String type = Uri.parse(id).getQueryParameter("type");
                 if ("json".equals(type))
                     url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();

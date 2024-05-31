@@ -9,7 +9,6 @@ import com.github.catvod.net.OkHttp;
 import com.google.common.net.HttpHeaders;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -48,16 +47,14 @@ public class M3U8 {
         }
     }
 
-    public static String _get(String url, Map<String, String> headers) {
+    public static byte[] _get(String url, Map<String, String> headers) {
         try {
-            if (TextUtils.isEmpty(url)) return "";
+            if (TextUtils.isEmpty(url)) return new byte[0];
             Response response = OkHttp.newCall(url, getHeader(headers)).execute();
-            if (response.header(HttpHeaders.ACCEPT_RANGES) != null && !url.contains(".m3u8")) return "";
-            byte[] result = response.body().bytes();
-            byte[] o = CutM3u8Ads.cutAds(result, url);
-            return new String(o, StandardCharsets.UTF_8);
+            if (response.header(HttpHeaders.ACCEPT_RANGES) != null && !url.contains(".m3u8")) return new byte[0];
+            return CutM3u8Ads.cutAds(response.body().bytes(), url);
         } catch (Throwable ignored) {
-            return "";
+            return new byte[0];
         }
     }
 

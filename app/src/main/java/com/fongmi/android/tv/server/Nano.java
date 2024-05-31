@@ -114,18 +114,10 @@ public class Nano extends NanoHTTPD {
 
     private Response cutAds(IHTTPSession session) {
         String url = session.getParms().get("url");
-        String result = M3U8._get(url, session.getHeaders());
-        if (result.isEmpty()) return redirect(url, session.getHeaders());
-//        Response response = newChunkedResponse(Response.Status.OK, "application/vnd.apple.mpegurl", new ByteArrayInputStream(result.getBytes(StandardCharsets.UTF_8)));
-        Response response = newFixedLengthResponse(Response.Status.OK, "application/vnd.apple.mpegurl", result);
-        addCORSHeaders(response);
+        byte[] result = M3U8._get(url, session.getHeaders());
+        if (result.length == 0) return redirect(url, session.getHeaders());
+        Response response = newChunkedResponse(Response.Status.OK, MIME_PLAINTEXT, new ByteArrayInputStream(result));
         return response;
-    }
-
-    private void addCORSHeaders(Response response) {
-        response.addHeader("Access-Control-Allow-Origin", "*");
-        response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-//        response.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     }
 
     private Response proxy(IHTTPSession session) {
