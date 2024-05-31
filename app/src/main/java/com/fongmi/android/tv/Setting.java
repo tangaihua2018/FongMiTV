@@ -18,7 +18,12 @@ public class Setting {
     }
 
     public static String getProxy() {
-        return Prefers.getString("proxy");
+        String proxy = Prefers.getString("proxy");
+        if (proxy == null || proxy.isEmpty()) {
+            proxy = "socks5://127.0.0.1:1081";
+            Prefers.put("proxy", proxy);
+        }
+        return proxy;
     }
 
     public static void putProxy(String proxy) {

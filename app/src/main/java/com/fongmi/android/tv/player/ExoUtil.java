@@ -140,9 +140,6 @@ public class ExoUtil {
 
     private static MediaSource getSource(Map<String, String> headers, String url, String format, List<Sub> subs, Sub sub, Drm drm, int errorCode) {
         Uri uri = UrlUtil.uri(url);
-        // 加代理去广告
-        if (CutM3u8Ads.haveAds(headers.get("flag"), url))
-            uri = Uri.parse(Server.get().getAddress().concat(Constant.CUT_ADS_PATH + "?url=").concat(URLEncoder.encode(uri.toString())));
         if (sub != null) subs.add(sub);
         String mimeType = getMimeType(format, errorCode);
         if (uri.getUserInfo() != null)

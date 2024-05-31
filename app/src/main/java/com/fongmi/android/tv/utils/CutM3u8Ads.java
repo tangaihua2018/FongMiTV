@@ -8,7 +8,6 @@ import android.os.Looper;
 
 import com.fongmi.android.tv.App;
 import com.github.catvod.net.OkHttp;
-import com.google.common.net.HttpHeaders;
 import com.iheartradio.m3u8.Encoding;
 import com.iheartradio.m3u8.Format;
 import com.iheartradio.m3u8.ParseException;
@@ -44,12 +43,10 @@ public class CutM3u8Ads {
             MasterPlaylist masterPlaylist = playlist.getMasterPlaylist();
             PlaylistData data = masterPlaylist.getPlaylists().get(0);
             // 拼接绝对路径
-            URI resolvedUri = new URI(baseUrl).resolve(data.getUri());
-            data.setUri(resolvedUri.toString());
-            okhttp3.Response response = OkHttp.newCall(resolvedUri.toString()).execute();
-            if (response.header(HttpHeaders.ACCEPT_RANGES) != null) return new byte[0];
+            String absUrl = new URI(baseUrl).resolve(data.getUri()).toString();
+            okhttp3.Response response = OkHttp.newCall(absUrl).execute();
             byte[] res = response.body().bytes();
-            return cutAds(res, resolvedUri.toString());
+            return cutAds(res, absUrl);
         }
 
         double duration = cut_ads_list(mediaPlaylist, baseUrl);

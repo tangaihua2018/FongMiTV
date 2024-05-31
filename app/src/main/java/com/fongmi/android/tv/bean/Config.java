@@ -189,7 +189,7 @@ public class Config {
         if (item == null) {
             item = create(0);
             item.setName("唐家影视点播");
-            item.setUrl(localConfigPath("tv.json"));
+            item.setUrl("assets://tv.json");
             AppDatabase.get().getConfigDao().insertOrUpdate(item);
         }
         return item;

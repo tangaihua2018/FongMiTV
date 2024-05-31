@@ -15,6 +15,8 @@ import com.fongmi.android.tv.impl.ProxyCallback;
 import com.fongmi.android.tv.ui.custom.CustomTextListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.Set;
+
 public class ProxyDialog {
 
     private final DialogProxyBinding binding;
@@ -58,7 +60,8 @@ public class ProxyDialog {
             }
         });
         binding.text.setOnEditorActionListener((textView, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
+            if (actionId == EditorInfo.IME_ACTION_DONE)
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick();
             return true;
         });
     }

@@ -7,6 +7,7 @@ import com.fongmi.android.tv.bean.Channel;
 import com.fongmi.android.tv.bean.Result;
 import com.fongmi.android.tv.server.Server;
 import com.fongmi.android.tv.utils.CutM3u8Ads;
+import com.fongmi.android.tv.utils.Sniffer;
 import com.fongmi.android.tv.utils.UrlUtil;
 
 import java.net.URLEncoder;
@@ -26,9 +27,8 @@ public class IjkUtil {
 
     public static MediaSource getSource(Map<String, String> headers, String url) {
         Uri uri = UrlUtil.uri(url);
-//        boolean m3u8Ad = Sniffer.getRegex(uri).size() > 0;
-        // 加代理去广告
-        if (CutM3u8Ads.haveAds(headers.get("flag"), url))
+        boolean m3u8Ad = Sniffer.getRegex(uri).size() > 0;
+        if (m3u8Ad)
             uri = Uri.parse(Server.get().getAddress().concat(Constant.CUT_ADS_PATH + "?url=").concat(URLEncoder.encode(uri.toString())));
         return new MediaSource(Players.checkUa(headers), uri);
     }
