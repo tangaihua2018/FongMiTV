@@ -35,7 +35,6 @@ import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -194,29 +193,24 @@ public class SiteViewModel extends ViewModel {
                 result.setUrl(Source.get().fetch(result));
                 return result;
             } else {
-                Url url;
-                int parse = 0;
-                String type = Uri.parse(id).getQueryParameter("type");
-                if ("json".equals(type)) {
-                    url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();
-                } else if (CutM3u8Ads.haveAds(flag, id)) {
-                    url = Url.create().add(Server.get().getAddress(true)
-                            .concat(Constant.CUT_ADS_PATH)
-                            .concat("?url=")
-                            .concat(URLEncoder.encode(id)));
-                } else {
-                    url = Url.create().add(id);
-                    parse = Sniffer.isVideoFormat(id) && site.getPlayUrl().isEmpty() ? 0 : 1;
-                }
+//                String u = id;
+//                if (CutM3u8Ads.haveAds(flag, id)) {
+//                    u = Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(id));
+//                }
+                Url url = Url.create().add(id);
 
+                String type = Uri.parse(id).getQueryParameter("type");
+                if ("json".equals(type))
+                    url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();
                 Result result = new Result();
+
                 result.setUrl(url);
                 result.setFlag(flag);
-                JsonObject heades = site.getHeader() == null ? new JsonObject() : (JsonObject) site.getHeader();
+                JsonObject heades = site.getHeader() == null ? new JsonObject(): (JsonObject) site.getHeader();
                 heades.addProperty("flag", flag);
                 result.setHeader(heades);
                 result.setPlayUrl(site.getPlayUrl());
-                result.setParse(parse);
+                result.setParse(Sniffer.isVideoFormat(url.v()) && result.getPlayUrl().isEmpty() ? 0 : 1);
                 SpiderDebug.log(result.toString());
                 return result;
             }
