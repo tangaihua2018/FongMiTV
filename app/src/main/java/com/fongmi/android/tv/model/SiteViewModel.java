@@ -198,9 +198,13 @@ public class SiteViewModel extends ViewModel {
                 String type = Uri.parse(id).getQueryParameter("type");
                 if ("json".equals(type)) {
                     url = Result.fromJson(OkHttp.newCall(id, site.getHeaders()).execute().body().string()).getUrl();
-                }else if (CutM3u8Ads.haveAds(flag, id)) {
-                    url = Url.create().add(Server.get().getAddress().concat("/index.m3u8?url=").concat(URLEncoder.encode(id)));
-                }else {
+                } else if (CutM3u8Ads.haveAds(flag, id)) {
+                    url = Url.create().add(
+                            Server.get().getAddress(true)
+                                    .concat(Constant.CUT_ADS_PATH)
+                                    .concat("?url=")
+                                    .concat(URLEncoder.encode(id)));
+                } else {
                     url = Url.create().add(id);
                     parse = Sniffer.isVideoFormat(url.v()) && site.getPlayUrl().isEmpty() ? 0 : 1;
                 }
@@ -208,7 +212,7 @@ public class SiteViewModel extends ViewModel {
                 Result result = new Result();
                 result.setUrl(url);
                 result.setFlag(flag);
-                JsonObject heades = site.getHeader() == null ? new JsonObject(): (JsonObject) site.getHeader();
+                JsonObject heades = site.getHeader() == null ? new JsonObject() : (JsonObject) site.getHeader();
                 heades.addProperty("flag", flag);
                 result.setHeader(heades);
                 result.setPlayUrl(site.getPlayUrl());
@@ -217,11 +221,6 @@ public class SiteViewModel extends ViewModel {
                 return result;
             }
         });
-    }
-
-    private String addProxy(String url, String flag) throws UnsupportedEncodingException {
-        return CutM3u8Ads.haveAds(flag, url) ?
-                "http://localhost:" + Server.get().getPort() + "/index.m3u8?url=" + URLEncoder.encode(url, "UTF-8") : url;
     }
 
     public void searchContent(Site site, String keyword, boolean quick) throws Throwable {
